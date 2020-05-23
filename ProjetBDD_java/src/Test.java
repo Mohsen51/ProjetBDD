@@ -22,6 +22,7 @@ public class Test {
                     System.out.println("1.  Consulter RDV ");
                     System.out.println("2.  Enregistrer un patient ");
                     System.out.println("3.  Ajouter un rdv ");
+                    System.out.println("4.  Entrer info sur un rdv ");
                     choice = sc.nextInt();
                     Statement st;
                     ResultSet rs;
@@ -55,9 +56,14 @@ public class Test {
                             System.out.println("Entrez la façon dont le patient a connu le cabinet : ");
                             String psy = "'" + sc.nextLine() + "'";
 
+                            System.out.println("Entrez la profession actuelle du patient : ");
+                            String prof = "'" + sc.nextLine() + "'";
+
                             st = con.createStatement();
-                            sql = "INSERT INTO \"Patient\" VALUES(" + age + ",pat_seq.nextval," + prenom + "," + nom + "," + psy + ")";
-                            rs = st.executeQuery(sql);
+                            sql = "INSERT INTO \"Patient\"(\"Age\",\"Prenom\",\"Nom\",\"ConnaissancePsy\") VALUES(" + age + "," + prenom + "," + nom + "," + psy + ")";
+                            st.executeQuery(sql);
+                            sql = "INSERT INTO \"Profession\"(\"IDPatient\",\"Profession\") VALUES(pat_seq.currval," + prof + ")";
+                            st.executeQuery(sql);
                             break;
                         case 3 :
                             sc.nextLine();
@@ -68,8 +74,27 @@ public class Test {
                             int couple = sc.nextInt();
 
                             st = con.createStatement();
-                            sql = "INSERT INTO \"Consultation\"(\"IDConsultation\", \"DateRDV\", \"Couple\") VALUES(cons_seq.nextval,TO_DATE(" + date + ", 'yyyy/mm/dd hh24:mi')," + couple + ")";
-                            rs = st.executeQuery(sql);
+                            sql = "INSERT INTO \"Consultation\"(\"DateRDV\", \"Couple\") VALUES(TO_DATE(" + date + ", 'yyyy/mm/dd hh24:mi')," + couple + ")";
+                            st.executeQuery(sql);
+                            sql= "INSERT INTO \"PatientConsultant\" VALUES(cons_seq.currval,pat_seq.currval)";
+                            break;
+                        case 4:
+                            sc.nextLine();
+                            System.out.println("Entrez le prix qu'a coûté la consultation : ");
+                            int prix = sc.nextInt();
+                            sc.nextLine();
+
+                            System.out.println("Quel a été le moyen de paiement du patient : ");
+                            String paiement = "'" + sc.nextLine() + "'";
+
+                            System.out.println("Quels sont vos commentaires sur cette consultation : ");
+                            String note = "'" + sc.nextLine() + "'";
+
+                            System.out.println("Quel était le degré d'anxieté du patient ? : ");
+                            int anxiete = sc.nextInt();
+
+                            st = con.createStatement();
+                            sql = "UPDATE \"Consultation\" SET \"Prix\"=" + prix + ",\"Paiement\"=" + paiement + ",\"Note\"=" + note + ",\"Anxiete\"=" + anxiete + " WHERE IDConsultation=cons_seq.currval";
                             break;
                         default:
                             System.out.println("Vous avez entré une option innexistante");
