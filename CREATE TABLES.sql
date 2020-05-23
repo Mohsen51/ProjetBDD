@@ -6,7 +6,6 @@ CREATE TABLE "Patient" (
   "ConnaissancePsy" VARCHAR2(255) NOT NULL
 );
 
-
 CREATE TABLE "Consultation" (
   "IDConsultation" NUMBER NOT NULL PRIMARY KEY,
   "DateRDV" DATE NOT NULL,
@@ -34,5 +33,33 @@ CREATE TABLE "Profession" (
   CONSTRAINT "FK_Prof_IDPatient" FOREIGN KEY ("IDPatient")
     REFERENCES "Patient"("ID")
 );
+
+CREATE TRIGGER "PSY"."Pat" BEFORE INSERT ON "PSY"."Patient" REFERENCING OLD AS "OLD" NEW AS "NEW" FOR EACH ROW 
+BEGIN
+  SELECT pat_seq.NEXTVAL
+  INTO   :new.id
+  FROM   dual;
+END;
+/
+
+CREATE TRIGGER "PSY"."Cons" BEFORE INSERT ON "PSY"."Consultation" REFERENCING OLD AS "OLD" NEW AS "NEW" FOR EACH ROW 
+BEGIN
+  SELECT cons_seq.NEXTVAL
+  INTO   :new."IDConsultation"
+  FROM   dual;
+END;
+/
+
+CREATE TRIGGER "PSY"."Prof" BEFORE INSERT ON "PSY"."Profession" REFERENCING OLD AS "OLD" NEW AS "NEW" FOR EACH ROW 
+BEGIN
+  SELECT prof_seq.NEXTVAL
+  INTO   :new."IDPatient"
+  FROM   dual;
+END;
+/
+
+CREATE SEQUENCE pat_seq START WITH 1;
+CREATE SEQUENCE prof_seq START WITH 1;
+CREATE SEQUENCE cons_seq START WITH 1;
 
 COMMIT;
