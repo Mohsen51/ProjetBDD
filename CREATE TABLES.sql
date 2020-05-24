@@ -1,9 +1,10 @@
 CREATE TABLE "Patient" (
-  "Age" NUMBER NOT NULL,
   "ID" NUMBER NOT NULL PRIMARY KEY,
   "Prenom" VARCHAR2(255) NOT NULL,
   "Nom" VARCHAR2(255) NOT NULL,
-  "ConnaissancePsy" VARCHAR2(255) NOT NULL
+  "DOB" DATE NOT NULL,
+  "ConnaissancePsy" VARCHAR2(255) NOT NULL,
+  "Adresse" VARCHAR2(255) NOT NULL
 );
 
 CREATE TABLE "Consultation" (
