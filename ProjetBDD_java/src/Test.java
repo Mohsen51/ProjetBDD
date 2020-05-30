@@ -1,3 +1,4 @@
+import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -7,15 +8,19 @@ public class Test {
         Class.forName("oracle.jdbc.driver.OracleDriver");
         Scanner sc = new Scanner(System.in);
         Boolean user = true;
+        //Lancement du programme do while pour l'interface de connexion
         do {
             System.out.println("Veuillez entrer votre nom d'utilisateur : ");
             String userName = sc.nextLine();
             System.out.println("Veuillez entrer votre mot de passe : ");
             String password = sc.nextLine();
+            //Try pour la gestion de l'exception SQLException en cas de compte ou mot de passe inexistant
             try {
-                //Connection to the database with the info provided by the user
+                //Connection à la db avec les infos données par l'utilisateur
                 Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", userName, password);
+                //Boolean pour la condition d'arret de la boucle
                 user = false;
+                //Boucle pour le choix des fonctions utilisateur
                 int quit = 0;
                 while (quit == 0) {
                     System.out.println("Veuillez choisir une action (entrez un nombre de 1 à 10) : ");
@@ -23,7 +28,7 @@ public class Test {
                     System.out.println("1.  Consulter RDV ");
                     System.out.println("2.  Enregistrer un patient ");
                     System.out.println("3.  Ajouter un rdv ");
-                    System.out.println("4.  Entrer info sur un rdv ");
+                    System.out.println("4.  Entrer info sur un rdv suite à une consultation ");
                     System.out.println("5.  Modifier info patient ");
                     int choice = sc.nextInt();
                     Statement st;
@@ -36,14 +41,51 @@ public class Test {
                             break;
                         case 1:
                             st = con.createStatement();
-
-                            rs = st.executeQuery("select * from \"Patient\"");
-
-                            while (rs.next())
-                                System.out.println("ID : " + rs.getInt(2) + " prenom : " + rs.getString(4) + " nom : " + rs.getString(3) + " age : " + rs.getInt(1) + " " + rs.getString(5));
-
+                            Statement st2;
+                            st2 = con.createStatement();
+                            Statement st3;
+                            st3 = con.createStatement();
+                            Statement st4;
+                            st4 = con.createStatement();
+                            ResultSet rs2= null;
+                            ResultSet rs3= null;
+                            ResultSet rs4= null;
+                            int patientId;
+                            rs = st.executeQuery("SELECT * FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('2020/06/10','yyyy/mm/dd') ");
+                            int idCorres=0;
+                            float age=0;
+                            while (rs.next()) {
+                                idCorres = rs.getInt("IDConsultation");
+                                rs2 = st2.executeQuery("SELECT \"IDPatient\" from \"PatientConsultant\" WHERE \"IDConsultation\" = " + idCorres);
+                                while (rs2.next()) {
+                                    patientId = rs2.getInt("IDPatient");
+                                    rs3 = st3.executeQuery("SELECT * FROM \"Patient\" WHERE \"ID\" = " + patientId);
+                                    System.out.println("Consultation à la date du : " + rs.getDate("DateRDV"));
+                                    while (rs3.next()) {
+                                        rs4 = st4.executeQuery("SELECt months_between(TRUNC(sysdate), to_date('" + rs3.getDate("DOB") + "','yyyy/mm/dd'))/12 AS age FROM DUAL");
+                                        while (rs4.next())
+                                            age = rs4.getFloat("AGE");
+                                        if (age<12)
+                                            System.out.println("Consultation d'un enfant : ");
+                                        if (age>=12 && age<18)
+                                            System.out.println("Consultation d'un ado : ");
+                                        else {
+                                            if (rs.getInt("Couple") == 1)
+                                                System.out.println("Consultation en couple : ");
+                                            if (rs3.getString("Sexe").equals("f"))
+                                                System.out.println("Consultation d'une femme : ");
+                                            if (rs3.getString("Sexe").equals("m"))
+                                                System.out.println("Consultation d'un homme : ");
+                                        }
+                                        System.out.println("\nprenom : " + rs3.getString(2) + "\nnom : " + rs3.getString(3) + "\nage : " + (int)age +"\nadresse : " + rs3.getString(5) + "\n");
+                                    }
+                                }
+                            }
                             rs.close();
+                            rs2.close();
                             st.close();
+                            st2.close();
+                            st3.close();
                             break;
                         case 2 :
                             sc.nextLine();
@@ -52,6 +94,9 @@ public class Test {
 
                             System.out.println("Entrez le prenom du patient : ");
                             String prenomPatient = "'" + sc.nextLine() + "'";
+
+                            System.out.println("Entrez le sexe du patient : (m : homme, f: femme)");
+                            String sexe = "'" + sc.nextLine() + "'";
 
                             System.out.println("Entrez votre date de naissance sous la forme : yyyy/mm/dd (par ex : 2003/05/19) : ");
                             String dob = "'" + sc.nextLine() + "'";
@@ -66,7 +111,7 @@ public class Test {
                             String prof = "'" + sc.nextLine() + "'";
 
                             st = con.createStatement();
-                            sql = "INSERT INTO \"Patient\"(\"Prenom\",\"Nom\",\"ConnaissancePsy\",\"Adresse\",\"DOB\") VALUES(" + prenomPatient + "," + nomPatient + "," + psy + "," + adresse + ",TO_DATE(" + dob + ", 'yyyy/mm/dd'))";
+                            sql = "INSERT INTO \"Patient\"(\"Prenom\",\"Nom\",\"ConnaissancePsy\",\"Adresse\",\"DOB\",\"Sexe\") VALUES(" + prenomPatient + "," + nomPatient + "," + psy + "," + adresse + ",TO_DATE(" + dob + ", 'yyyy/mm/dd')," + sexe + ")";
                             st.executeQuery(sql);
                             sql = "INSERT INTO \"Profession\"(\"IDPatient\",\"Profession\") VALUES(pat_seq.currval," + prof + ")";
                             st.executeQuery(sql);
@@ -133,11 +178,12 @@ public class Test {
                             int anxiete = sc.nextInt();
 
                             st = con.createStatement();
-                            sql = "UPDATE \"Consultation\" SET \"Prix\"=" + prix + ",\"Paiement\"=" + paiement + ",\"Note\"=" + note + ",\"Anxiete\"=" + anxiete + " WHERE IDConsultation=cons_seq.currval";
+                            sql = "UPDATE \"Consultation\" SET \"Prix\"=" + prix + ",\"Paiement\"=" + paiement + ",\"Note\"=" + note + ",\"Anxiete\"=" + anxiete + " WHERE \"IDConsultation\" = cons_seq.currval";
 
                             st.close();
                             break;
                         case 5:
+                            sc.nextLine();
                             System.out.println("Entrez le nom du patient dont vous voulez modifier les infos : ");
                             String nom = "'" + sc.nextLine() + "'";
 
@@ -157,11 +203,13 @@ public class Test {
                             while (rs.next()) {
                                 idPatient = rs.getInt("ID");
                             }
-                            sql = "UPDATE \"Patient\" SET \"adresse\"=" + newAdresse + " WHERE ID = " + idPatient;
+                            System.out.println(idPatient);
+                            sql = "UPDATE \"Patient\" SET \"Adresse\"=" + newAdresse + " WHERE ID = " + idPatient;
                             st.executeQuery(sql);
                             sql = "INSERT INTO \"Profession\"(\"IDPatient\",\"Profession\") VALUES(" + idPatient + "," + profession + ")";
                             st.executeQuery(sql);
                             st.close();
+                            break;
                         default:
                             System.out.println("Vous avez entré une option innexistante");
                     }

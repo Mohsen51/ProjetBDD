@@ -4,7 +4,8 @@ CREATE TABLE "Patient" (
   "Nom" VARCHAR2(255) NOT NULL,
   "DOB" DATE NOT NULL,
   "ConnaissancePsy" VARCHAR2(255) NOT NULL,
-  "Adresse" VARCHAR2(255) NOT NULL
+  "Adresse" VARCHAR2(255) NOT NULL,
+  "Sexe" VARCHAR2(1) NOT NULL
 );
 
 CREATE TABLE "Consultation" (
