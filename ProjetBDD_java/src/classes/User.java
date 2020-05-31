@@ -30,14 +30,41 @@ public class User {
         System.out.println("Veuillez entrer votre mot de passe : ");
         this.password = sc.nextLine();
         
+        ResultSet rs = null ;
         try {
         	this.con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", this.iD, this.password);
+        	Statement st = con.createStatement() ;
+        	if(isAdmin(st,rs)) {
+        		this.role = Role.Admin;
+        		
+        	}
+        	else this.role = Role.Patient;
+        	
+        	
+        	
+        	
         } catch (SQLException e) {
         	System.out.println("Erreur de connexion (le nom d'utilisateur ou le mot de passe est erroné) : " + e.getMessage());
         	return true;
         }
 		
 		
+		return false;
+	}
+
+
+	private boolean isAdmin(Statement st, ResultSet rs) {
+		try {
+			rs = st.executeQuery("SELECT * from \"Admin\" ");
+			while(rs.next()) {
+	    		if (rs.getString("UserName").equals(iD)) return true;
+	    	}
+			
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+    	
 		return false;
 	}
 	

@@ -8,6 +8,8 @@ CREATE TABLE "Patient" (
   "Sexe" VARCHAR2(1) NOT NULL,
   "Email" VARCHAR2(255) NOT NULL,
   "Password" VARCHAR2(255) NOT NULL
+  
+  
 );
 
 CREATE TABLE "Consultation" (
@@ -73,5 +75,6 @@ END;
 CREATE SEQUENCE pat_seq START WITH 1;
 CREATE SEQUENCE prof_seq START WITH 1;
 CREATE SEQUENCE cons_seq START WITH 1;
+
 
 COMMIT;
