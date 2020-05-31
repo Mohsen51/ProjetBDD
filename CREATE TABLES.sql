@@ -5,7 +5,7 @@ CREATE TABLE "Patient" (
   "DOB" DATE NOT NULL,
   "ConnaissancePsy" VARCHAR2(255) NOT NULL,
   "Adresse" VARCHAR2(255) NOT NULL,
-  "Sexe" VARCHAR2(1) NOT NULL
+  "Sexe" VARCHAR2(1) NOT NULL,
   "Email" VARCHAR2(255) NOT NULL,
   "Password" VARCHAR2(255) NOT NULL
 );

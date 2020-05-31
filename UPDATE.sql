@@ -1,11 +1,20 @@
 SELECT * FROM "Patient" p ;
 DELETE FROM "Patient" p ;
-TRUNCATE  TABLE "Patient"  ;
+
+
+ALTER TABLE "Patient" 
+ADD "Sexe" VARCHAR2(1) NOT NULL;
+
 ALTER TABLE "Patient" 
 ADD "Email" VARCHAR2(255) NOT NULL;
 
 ALTER TABLE "Patient" 
 ADD "Password" VARCHAR2(255) NOT NULL;
+
+
+
+ALTER TABLE "Patient" 
+DROP COLUMN "Password";
 
 CREATE TABLE "Admin" (
   "UserName" VARCHAR2(255) NOT NULL PRIMARY KEY, /*Have to be link with Email for the checking*/
