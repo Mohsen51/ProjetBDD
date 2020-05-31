@@ -4,7 +4,9 @@ CREATE TABLE "Patient" (
   "Nom" VARCHAR2(255) NOT NULL,
   "DOB" DATE NOT NULL,
   "ConnaissancePsy" VARCHAR2(255) NOT NULL,
-  "Adresse" VARCHAR2(255) NOT NULL
+  "Adresse" VARCHAR2(255) NOT NULL,
+  "Email" VARCHAR2(255) NOT NULL,
+  "Password" VARCHAR2(255) NOT NULL
 );
 
 CREATE TABLE "Consultation" (
@@ -33,6 +35,13 @@ CREATE TABLE "Profession" (
   "Profession" VARCHAR2(255) NOT NULL,
   CONSTRAINT "FK_Prof_IDPatient" FOREIGN KEY ("IDPatient")
     REFERENCES "Patient"("ID")
+);
+
+CREATE TABLE "Admin" (
+  "UserName" VARCHAR2(255) NOT NULL PRIMARY KEY, /*Have to be link with Email for the checking*/
+  "Prenom" VARCHAR2(255) NOT NULL,
+  "Nom" VARCHAR2(255) NOT NULL,
+  "Password" VARCHAR2(255) NOT NULL
 );
 
 CREATE TRIGGER "PSY"."Pat" BEFORE INSERT ON "PSY"."Patient" REFERENCING OLD AS "OLD" NEW AS "NEW" FOR EACH ROW 
