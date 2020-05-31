@@ -1,3 +1,8 @@
+CREATE TABLESPACE Projet_bdd
+   DATAFILE 'Projet_bdd.dbf' 
+   SIZE  10m;
+/
+
 CREATE USER psy
   IDENTIFIED BY admin
   DEFAULT TABLESPACE Projet_bdd
