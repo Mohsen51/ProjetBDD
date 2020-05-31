@@ -1,5 +1,6 @@
-import javax.swing.plaf.nimbus.State;
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 public class Test {
@@ -31,6 +32,8 @@ public class Test {
                     System.out.println("4.  Entrer info sur un rdv suite à une consultation ");
                     System.out.println("5.  Modifier info patient ");
                     int choice = sc.nextInt();
+
+                    //Initialisation des variables de gestion jdbc
                     Statement st;
                     ResultSet rs;
                     String sql;
@@ -40,6 +43,7 @@ public class Test {
                             quit = sc.nextInt();
                             break;
                         case 1:
+                            //Initialisation des variables de gestion jdbc
                             st = con.createStatement();
                             Statement st2;
                             st2 = con.createStatement();
@@ -50,25 +54,40 @@ public class Test {
                             ResultSet rs2= null;
                             ResultSet rs3= null;
                             ResultSet rs4= null;
+
                             int patientId;
-                            rs = st.executeQuery("SELECT * FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('2020/06/10','yyyy/mm/dd') ");
+                            rs = st.executeQuery("SELECT * FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('2020/06/10','yyyy/mm/dd') ORDER BY (\"DateRDV\") ASC");
                             int idCorres=0;
                             float age=0;
+                            //On fait ce qui vient pour chaque consultation à la date entrée
                             while (rs.next()) {
                                 idCorres = rs.getInt("IDConsultation");
                                 rs2 = st2.executeQuery("SELECT \"IDPatient\" from \"PatientConsultant\" WHERE \"IDConsultation\" = " + idCorres);
+                                //On fait ce qui vient pour chaque patient assitant à la consultation à la date entrée
                                 while (rs2.next()) {
+                                    //On va afficher les characteristiques des patients ici
                                     patientId = rs2.getInt("IDPatient");
+                                    //On selectionne les patients
                                     rs3 = st3.executeQuery("SELECT * FROM \"Patient\" WHERE \"ID\" = " + patientId);
-                                    System.out.println("Consultation à la date du : " + rs.getDate("DateRDV"));
+
+                                    //On affiche la date du rdv pour ca on convertit la date en format java.sql.time en java.util.date (plus clair)
+                                    java.sql.Timestamp dbSqlTimestamp = rs.getTimestamp("DateRDV");
+                                    java.util.Date dbSqlTimeConverted = new java.util.Date(dbSqlTimestamp.getTime());
+                                    System.out.println("Ce patient a rdv le : " + dbSqlTimeConverted);
+
+                                    //Pour chaque patient selctionné on fait ce qui vient
                                     while (rs3.next()) {
-                                        rs4 = st4.executeQuery("SELECt months_between(TRUNC(sysdate), to_date('" + rs3.getDate("DOB") + "','yyyy/mm/dd'))/12 AS age FROM DUAL");
+
+                                        //Ici on va calculer l'age des patients en utilisant leur date de naissance
+                                        rs4 = st4.executeQuery("SELECT months_between(TRUNC(sysdate), to_date('" + rs3.getDate("DOB") + "','yyyy/mm/dd'))/12 AS age FROM DUAL");
                                         while (rs4.next())
                                             age = rs4.getFloat("AGE");
+
                                         if (age<12)
                                             System.out.println("Consultation d'un enfant : ");
                                         if (age>=12 && age<18)
                                             System.out.println("Consultation d'un ado : ");
+                                        //Si ce sont des adultes
                                         else {
                                             if (rs.getInt("Couple") == 1)
                                                 System.out.println("Consultation en couple : ");
@@ -110,6 +129,7 @@ public class Test {
                             System.out.println("Entrez la profession actuelle du patient : ");
                             String prof = "'" + sc.nextLine() + "'";
 
+                            //On ajoute le nouveau patient et sa profession dans la bdd
                             st = con.createStatement();
                             sql = "INSERT INTO \"Patient\"(\"Prenom\",\"Nom\",\"ConnaissancePsy\",\"Adresse\",\"DOB\",\"Sexe\") VALUES(" + prenomPatient + "," + nomPatient + "," + psy + "," + adresse + ",TO_DATE(" + dob + ", 'yyyy/mm/dd')," + sexe + ")";
                             st.executeQuery(sql);
@@ -121,13 +141,46 @@ public class Test {
                         case 3 :
                             sc.nextLine();
 
-                            System.out.println("Entrez la date du RDV sous la forme : yyyy/mm/dd hh24:mi (par ex : 2003/05/19 16:00) : ");
-                            String date = "'" + sc.nextLine() + "'";
-
+                            //Initialisation des variables pour la boucle while
+                            int day=0;
+                            int hours = 0;
                             st = con.createStatement();
-                            sql = "INSERT INTO \"Consultation\"(\"DateRDV\", \"Couple\") VALUES(TO_DATE(" + date + ", 'yyyy/mm/dd hh24:mi'),0)";
+                            int count = 20;
+                            String date = null;
+
+                            /*Si le numéro de jour correspond à dimanche on redemande la date idem pour une heure en dehors du crénau 8h 20h
+                            Si le total de rdv excede 20 cela veut dire que la psychologue travaille plus de 10h*/
+                            while (day==0 || count>=20 || (hours >20 || hours<8)) {
+                                System.out.println("Entrez la date du RDV sous la forme : yyyy/mm/dd hh24:mi (par ex : 2003/05/19 16:00) : ");
+                                date = sc.nextLine();
+
+                                //On convertit le string en date pour obtenir le jour (dimanche par exemple) et pour pouvoir étudier l'heure de rdv
+                                Date dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm").parse(date);
+                                java.util.Date dateConverted = new java.util.Date(dateFormat.getTime());
+
+                                //Splinting to have date and time separated
+                                String[] parts = date.split("\\s+");
+
+                                //On extrait le jour pour confirmer une erreur en cas de rdv dimanche (0: dimanche)
+                                day = dateConverted.getDay();
+
+                                //On extrait l'heure pour confirmer une erreur en cas de rdv en dehors de 8h 20h
+                                hours = dateConverted.getHours();
+                                if (day == 0)
+                                    System.out.println("Le cabinet n'est pas ouvert le dimanche ! ");
+                                if (hours >20 || hours<8)
+                                    System.out.println("Le cabinet est ouvert de 8h à 20h seulement ! ");
+
+                                //On compte le nombre de rdv pris pour vérifier le quota de 10h de travail
+                                rs = st.executeQuery("SELECT COUNT(\"IDConsultation\") AS total FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('" + parts[0] + "','yyyy/mm/dd')");
+                                while (rs.next())
+                                    count = rs.getInt("total");
+                            }
+
+                            sql = "INSERT INTO \"Consultation\"(\"DateRDV\", \"Couple\") VALUES(TO_DATE('" + date + "', 'yyyy/mm/dd hh24:mi'),0)";
                             st.executeQuery(sql);
 
+                            //Verification que le nombre de patient est entre 1 et 3
                             int nb = 0;
                             do {
                                 System.out.println("Combien de patients vont assister à ce RDV ? : (1 à 3 patients) ");
@@ -143,11 +196,14 @@ public class Test {
                                 System.out.println("Entrez le prenom du patient prenant le RDV: ");
                                 String prenom = "'" + sc.nextLine() + "'";
 
+                                //On cherche le patient dans la bdd
                                 sql = "SELECT ID FROM \"Patient\" WHERE \"Nom\" =" + nom + " AND \"Prenom\" =" + prenom;
                                 rs = st.executeQuery(sql);
                                 while (rs.next()) {
                                     id = rs.getInt("ID");
                                 }
+
+                                //On associe la consultation a un ou plusieurs patient(s) spécifiques
                                 sql= "INSERT INTO \"PatientConsultant\" VALUES(cons_seq.currval,"+ id + ")";
                                 st.executeQuery(sql);
                             }
@@ -177,6 +233,7 @@ public class Test {
                             System.out.println("Quel était le degré d'anxieté du patient ? : ");
                             int anxiete = sc.nextInt();
 
+                            //On associe les données recueillies lors d'une consultation et on les mets dans la bdd
                             st = con.createStatement();
                             sql = "UPDATE \"Consultation\" SET \"Prix\"=" + prix + ",\"Paiement\"=" + paiement + ",\"Note\"=" + note + ",\"Anxiete\"=" + anxiete + " WHERE \"IDConsultation\" = cons_seq.currval";
 
@@ -196,6 +253,7 @@ public class Test {
                             System.out.println("Entrez la nouvelle profession actuelle du patient : ");
                             String profession = "'" + sc.nextLine() + "'";
 
+                            //On cherche l'id du patient pour lequel on veut modifier les données
                             st = con.createStatement();
                             sql = "SELECT ID FROM \"Patient\" WHERE \"Nom\" =" + nom + " AND \"Prenom\" =" + prenom;
                             rs = st.executeQuery(sql);
@@ -203,9 +261,10 @@ public class Test {
                             while (rs.next()) {
                                 idPatient = rs.getInt("ID");
                             }
-                            System.out.println(idPatient);
+                            //On actualise les données du patient
                             sql = "UPDATE \"Patient\" SET \"Adresse\"=" + newAdresse + " WHERE ID = " + idPatient;
                             st.executeQuery(sql);
+                            //On lui ajoute une nouvelle profession
                             sql = "INSERT INTO \"Profession\"(\"IDPatient\",\"Profession\") VALUES(" + idPatient + "," + profession + ")";
                             st.executeQuery(sql);
                             st.close();
