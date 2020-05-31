@@ -276,6 +276,7 @@ public class Test {
                 System.out.println("Au revoir !");
                 con.close();
             } catch (SQLException e) {
+            	user = true;
                 System.out.println("Erreur de connexion (le nom d'utilisateur ou le mot de passe est erroné) : " + e.getMessage());
             }
         } while (user);
