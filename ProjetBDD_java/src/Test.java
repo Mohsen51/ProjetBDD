@@ -1,5 +1,7 @@
 import java.sql.*;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -31,6 +33,7 @@ public class Test {
                     System.out.println("3.  Ajouter un rdv ");
                     System.out.println("4.  Entrer info sur un rdv suite à une consultation ");
                     System.out.println("5.  Modifier info patient ");
+                    System.out.println("6.  Consulter RDV passés patient ");
                     int choice = sc.nextInt();
 
                     //Initialisation des variables de gestion jdbc
@@ -55,12 +58,36 @@ public class Test {
                             ResultSet rs3= null;
                             ResultSet rs4= null;
 
+                            String consultation;
+                            System.out.println("Entrez la date que vous voulez vérifier sous la forme : yyyy/mm/dd (par ex : 2003/05/19) : ");
+                            sc.nextLine();
+                            consultation = sc.nextLine();
+
                             int patientId;
-                            rs = st.executeQuery("SELECT * FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('2020/06/10','yyyy/mm/dd') ORDER BY (\"DateRDV\") ASC");
+                            System.out.println("Voulez vous vérifier pour la semaine suivant cette date ? (1 si oui) ");
+                            int semaine = sc.nextInt();
+                            sc.nextLine();
+                            if (semaine==1) {
+                                //Process to add seven days to the date
+                                Date date1=new SimpleDateFormat("yyyy/MM/dd").parse(consultation);
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(date1);
+                                cal.add(Calendar.DATE, 7);
+                                date1 = cal.getTime();
+                                DateFormat format = new SimpleDateFormat("yyyy/MM/dd");
+                                String strDate = format.format(date1);
+
+                                rs = st.executeQuery("SELECT * FROM \"Consultation\" WHERE trunc(\"DateRDV\") BETWEEN to_date('" + consultation + "','yyyy/mm/dd') AND to_date('" + strDate + "','yyyy/mm/dd') ORDER BY (\"DateRDV\") ASC");
+                            }
+                            else
+                                rs = st.executeQuery("SELECT * FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('" + consultation + "','yyyy/mm/dd') ORDER BY (\"DateRDV\") ASC");
                             int idCorres=0;
                             float age=0;
+                            //Occ pour verifier s'il y a des consultations a une date donnée
+                            int occ=0;
                             //On fait ce qui vient pour chaque consultation à la date entrée
                             while (rs.next()) {
+                                occ=1;
                                 idCorres = rs.getInt("IDConsultation");
                                 rs2 = st2.executeQuery("SELECT \"IDPatient\" from \"PatientConsultant\" WHERE \"IDConsultation\" = " + idCorres);
                                 //On fait ce qui vient pour chaque patient assitant à la consultation à la date entrée
@@ -100,8 +127,8 @@ public class Test {
                                     }
                                 }
                             }
-                            rs.close();
-                            rs2.close();
+                            if (occ==0)
+                                System.out.println("Pas de RDV ce jour la ! ");
                             st.close();
                             st2.close();
                             st3.close();
@@ -156,7 +183,7 @@ public class Test {
                                 date = sc.nextLine();
 
                                 //On convertit le string en date pour obtenir le jour (dimanche par exemple) et pour pouvoir étudier l'heure de rdv
-                                Date dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm").parse(date);
+                                Date dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm").parse(date);
                                 java.util.Date dateConverted = new java.util.Date(dateFormat.getTime());
 
                                 //Splinting to have date and time separated
@@ -177,7 +204,16 @@ public class Test {
                                 while (rs.next())
                                     count = rs.getInt("total");
                                 //On vérifie que le créneau est disponible
-                                rs = st.executeQuery("SELECT COUNT(\"IDConsultation\") AS exist FROM \"Consultation\" WHERE (\"DateRDV\") = to_date('" + date + "','yyyy/mm/dd hh24:mi')");
+
+                                //Ici en particulier on va ajouter 30minutes a la date pour vérifier les créneaux
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(dateFormat);
+                                cal.add(Calendar.MINUTE, 30);
+                                dateFormat = cal.getTime();
+                                DateFormat formadate = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+                                String strDate = formadate.format(dateFormat);
+
+                                rs = st.executeQuery("SELECT COUNT(\"IDConsultation\") AS exist FROM \"Consultation\" WHERE (\"DateRDV\") BETWEEN to_date('" + date + "','yyyy/mm/dd hh24:mi') AND to_date('" + strDate +  "','yyyy/mm/dd hh24:mi')");
                                 while (rs.next())
                                     exists = rs.getInt("exist");
                                 if (count>=20)
@@ -276,7 +312,7 @@ public class Test {
 
                             //On cherche l'id du patient pour lequel on veut modifier les données
                             st = con.createStatement();
-                            sql = "SELECT ID FROM \"Patient\" WHERE \"Nom\" =" + nom + " AND \"Prenom\" =" + prenom;
+                            sql = "SELECT \"ID\" FROM \"Patient\" WHERE \"Nom\" =" + nom + " AND \"Prenom\" =" + prenom;
                             rs = st.executeQuery(sql);
                             int idPatient = 0;
                             while (rs.next()) {
@@ -289,6 +325,45 @@ public class Test {
                             sql = "INSERT INTO \"Profession\"(\"IDPatient\",\"Profession\") VALUES(" + idPatient + "," + profession + ")";
                             st.executeQuery(sql);
                             st.close();
+                            break;
+                        case 6 :
+
+                            sc.nextLine();
+                            Statement state2;
+
+                            ResultSet consultations;
+                            System.out.println("Entrez le nom du patient dont vous voulez consulter les rdv : ");
+                            String nomRdv = "'" + sc.nextLine() + "'";
+
+                            System.out.println("Entrez le prenom du patient dont vous voulez consulter les rdv : ");
+                            String prenomRdv = "'" + sc.nextLine() + "'";
+
+                            //On cherche l'id du patient
+                            st = con.createStatement();
+                            sql = "SELECT \"ID\" FROM \"Patient\" WHERE \"Nom\" =" + nomRdv + " AND \"Prenom\" =" + prenomRdv;
+                            rs = st.executeQuery(sql);
+                            int idP=0;
+                            while (rs.next()) {
+                                idP = rs.getInt("ID");
+                            }
+                            //On cherche les consultations que ce patient a pris
+                            sql = "SELECT \"IDConsultation\" FROM \"PatientConsultant\" WHERE \"IDPatient\" =" + idP + " ORDER BY \"IDConsultation\" DESC";
+                            rs = st.executeQuery(sql);
+                            int idC=0;
+                            while (rs.next()) {
+                                //On va chercher les dates correspondantes à ces consultations
+                                idC = rs.getInt("IDConsultation");
+                                sql = "SELECT \"DateRDV\" FROM \"Consultation\" WHERE \"IDConsultation\" =" + idC;
+
+                                state2 = con.createStatement();
+                                consultations = state2.executeQuery(sql);
+                                while (consultations.next()) {
+                                    //On convertit pour un plus bel affichage de la date
+                                    java.sql.Timestamp rdvTimestamp = consultations.getTimestamp("DateRDV");
+                                    java.util.Date rdvTimeConverted = new java.util.Date(rdvTimestamp.getTime());
+                                    System.out.println("Ce patient a pris un rdv le : " + rdvTimeConverted);
+                                }
+                            }
                             break;
                         default:
                             System.out.println("Vous avez entré une option innexistante");
