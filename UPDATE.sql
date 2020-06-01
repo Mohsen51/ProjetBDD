@@ -43,5 +43,14 @@ GRANT create USER TO psy;
 CREATE USER "marie.jeanne@bio.com" IDENTIFIED BY legalize DEFAULT TABLESPACE Projet_bdd QUOTA 20M on Projet_bdd;
 GRANT create session TO "marie.jeanne@bio.com";
 
+ALTER TABLE "Consultation" 
+MODIFY "Prix" NUMBER NULL ;
+
+ALTER TABLE "Consultation" 
+MODIFY "Reglement" VARCHAR2(255) NULL ;
+
+SELECT * FROM "Consultation" c ;
+
+INSERT TO "Consultation"
 
 COMMIT;

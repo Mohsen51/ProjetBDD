@@ -34,6 +34,7 @@ public class RdvMain {
 		        		ToolBox.addRDV(user.con);
 		        		break;
 		        	case 4 :
+		        		ToolBox.updateRDV(user.con);
 		        		break;
 		        	case 5 :
 		        		break;
