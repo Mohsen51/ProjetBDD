@@ -51,6 +51,8 @@ MODIFY "Reglement" VARCHAR2(255) NULL ;
 
 SELECT * FROM "Consultation" c ;
 
+DELETE FROM "PatientConsultant" WHERE "IDConsultation" =
+
 INSERT TO "Consultation"
 
 COMMIT;

@@ -12,8 +12,13 @@ CREATE TABLE "Patient" (
 CREATE TABLE "Consultation" (
   "IDConsultation" NUMBER NOT NULL PRIMARY KEY,
   "DateRDV" DATE NOT NULL,
+<<<<<<< Updated upstream
   "Prix" NUMBER,
   "Reglement" VARCHAR2(255),
+=======
+  "Prix" NUMBER ,
+  "Reglement" VARCHAR2(255) ,
+>>>>>>> Stashed changes
   "Anxiete" NUMBER,
   "Note" VARCHAR2(255),
 	"Couple" NUMBER(1)

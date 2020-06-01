@@ -29,8 +29,9 @@ public class ToolBox {
 	        System.out.println("3.  Ajouter un rdv ");
 	        System.out.println("4.  Entrer info sur un rdv ");
 	        System.out.println("5.  Modifier info patient ");
+	        System.out.println("6.  Annuler un rdv ");
 	        choice  = sc.nextInt();
-		}while(choice > 5 || choice < 0);
+		}while(choice > 6 || choice < 0);
 			
 			
 		
@@ -46,12 +47,12 @@ public class ToolBox {
 		
 	}
 
-	public static void displayRDV(Connection con) {
+	public static void displayRDV(Connection con, String string) {
 		int done = 1;
 		do {
 			try {
 				Scanner sc = new Scanner(System.in);
-				Scanner sc2 = new Scanner(System.in);
+				
 				 //Initialisation des variables de gestion jdbc
                 st = con.createStatement();
                 Statement st2;
@@ -63,15 +64,14 @@ public class ToolBox {
                 ResultSet rs2= null;
                 ResultSet rs3= null;
                 ResultSet rs4= null;
-                int choose;
+                
                 int patientId;
                 int idCorres=0;
                 float age=0;
                 String date;
                 
-                do {
                 	 
-                     System.out.println("Entrez la date a consulter sous la forme : yyyy/mm/dd (par ex : 2003/05/19) : ");
+                     System.out.println("Entrez la date " + string + " sous la forme : yyyy/mm/dd (par ex : 2003/05/19) : ");
                      date = sc.nextLine();
                      rs = st.executeQuery("SELECT * FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('" + date + "','yyyy/mm/dd') ORDER BY (\"DateRDV\") ASC");
                      
@@ -112,19 +112,14 @@ public class ToolBox {
                                      if (rs3.getString("Sexe").equals("m"))
                                          System.out.println("Consultation d'un homme : ");
                                  }
-                                 System.out.println("\nprenom : " + rs3.getString(2) + "\nnom : " + rs3.getString(3) + "\nage : " + (int)age +"\nadresse : " + rs3.getString(5) + "\n");
+                                 System.out.println("\nprenom : " + rs3.getString(2) + "\nnom : " + rs3.getString(3) + "\nage : " + (int)age +"\nadresse : " + rs3.getString(6) + "\n");
                              }
                          }
                      }
                      
-                     System.out.println("Consulter un autre jour ? (0 pour oui)");
-                     try {
-                    	 choose = sc2.nextInt();
-                     }catch(Exception e1) {
-                    	 choose = 1;
-                     }
                      
-                }while(choose == 0);
+                     
+               
                 
 
                
@@ -408,6 +403,58 @@ public class ToolBox {
 			e.printStackTrace();
 		}
         
+		
+	}
+
+	public static void delRDV(Connection con) {
+		Scanner sc = new Scanner(System.in);
+		Scanner sc2 = new Scanner(System.in);
+		Scanner sc3 = new Scanner(System.in);
+		
+		try {
+			st = con.createStatement();
+			String rdv = null;
+			int choose;
+			int choice = 1;
+			do {
+				
+				System.out.println("Entrez la date du RDV sous la forme : yyyy/mm/dd hh24:mi (par ex : 2003/05/19 16:00) : ");
+		        rdv = sc.nextLine();
+		        rs = st.executeQuery("SELECT \"IDConsultation\" FROM \"Consultation\" WHERE (\"DateRDV\")= to_date('" + rdv + "','yyyy/mm/dd hh24:mi')");
+		        int idc=0;
+		        while (rs.next())
+		            idc = rs.getInt("IDConsultation");
+		        System.out.println("Etes vous sur de vouloir annuler le rdv du " + rdv + " (0 pour oui)");
+		        choice = sc3.nextInt();
+		        
+		        if (choice == 0) {
+		        	
+		        	
+		        	rs = st.executeQuery("DELETE FROM \"PatientConsultant\" WHERE \"IDConsultation\" = " + idc);
+		        	rs = st.executeQuery("DELETE FROM \"Consultation\" WHERE (\"DateRDV\")= to_date('" + rdv + "','yyyy/mm/dd hh24:mi')");
+		        	System.out.println("Le rdv du " + rdv + " a été annulé.");
+		        }
+		       
+		       
+
+		        st.close();
+				
+				
+				
+				System.out.println("Voulez vous annuler un autre rdv ? (0 pour oui)");
+                try {
+               	 choose = sc2.nextInt();
+                }catch(Exception e1) {
+               	 choose = 1;
+                }
+			}while (choose  == 0);
+	        
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+		
 		
 	}
 
