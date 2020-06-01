@@ -51,8 +51,20 @@ MODIFY "Reglement" VARCHAR2(255) NULL ;
 
 SELECT * FROM "Consultation" c ;
 
-DELETE FROM "PatientConsultant" WHERE "IDConsultation" =
+DELETE FROM "PatientConsultant" WHERE "IDConsultation" =;
 
+SELECT "DateRDV"  FROM "Consultation" c INNER JOIN "PatientConsultant" pc ON c."IDConsultation" = pc."IDConsultation" INNER JOIN "Patient" p ON pc."IDPatient"  = p.ID WHERE p."Email" = 'marie.jeanne@bio.com' ;
+ALTER SESSION SET current_schema = PSY;
+SELECT "DateRDV"  FROM "Consultation" c INNER JOIN "PatientConsultant" pc ON c."IDConsultation" = pc."IDConsultation" INNER JOIN "Patient" p ON pc."IDPatient"  = p.ID WHERE p."Email" = 'marie.jeanne@bio.com';
+
+GRANT SELECT ON "Consultation" TO "marie.jeanne@bio.com" ;
+
+REVOKE
+ALL PRIVILEGES 
+ON "Profession" 
+FROM "marie.jeanne@bio.com";
+
+SELECT "Email" FROM "Patient" p ;
 INSERT TO "Consultation"
 
 COMMIT;

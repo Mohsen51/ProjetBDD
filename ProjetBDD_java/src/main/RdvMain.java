@@ -68,10 +68,9 @@ public class RdvMain {
 		        		}
 		        		break;
 		        	case 1 :
-		        		ToolBox.displayRDV(user.con, null);
+		        		ToolBox.displayRDVP(user);
 		        		break;
 		        	case 2 :
-		        		ToolBox.addRDV(user.con);
 		        		break;
 		        	case 3 :
 		        		break;

@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
+import classes.User;
+
 
 
 public class ToolBox {
@@ -354,11 +356,9 @@ public class ToolBox {
 		do {
 			System.out.println("Veuillez choisir une action (entrez un nombre de 1 à 10) : ");
 	        System.out.println("0.  Quitter le programme ");
-	        System.out.println("1.  Consulter RDV ");
-	        System.out.println("2.  Ajouter un rdv ");
-	        System.out.println("3.  Entrer info sur un rdv ");
+	        System.out.println("1.  Consulter ses RDV ");
 	        choice  = sc.nextInt();
-		}while(choice > 3 || choice < 0);
+		}while(choice > 1 || choice < 0);
 			
 			
 		
@@ -457,6 +457,32 @@ public class ToolBox {
 		
 		
 	}
+
+	public static void displayRDVP(User user) {
+		
+		try {
+			st = user.con.createStatement();
+			sql = "SELECT \"DateRDV\"  FROM \"Consultation\" c INNER JOIN \"PatientConsultant\" pc ON c.\"IDConsultation\" = pc.\"IDConsultation\" INNER JOIN \"Patient\" p ON pc.\"IDPatient\"  = p.ID WHERE p.\"Email\" = '" + user.iD +"' " ;
+			// Make sure that the Good Schema is targeted 
+			rs = st.executeQuery("ALTER SESSION SET current_schema = PSY");
+			// Run the Query to select only the Rdv link to the user
+			rs = st.executeQuery(sql);
+			System.out.println("Vos Rdv :");
+			while(rs.next()) {
+				java.sql.Timestamp dbSqlTimestamp = rs.getTimestamp("DateRDV");
+                java.util.Date dbSqlTimeConverted = new java.util.Date(dbSqlTimestamp.getTime());
+                System.out.println(dbSqlTimeConverted);
+			}
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	
 
 	
 	
