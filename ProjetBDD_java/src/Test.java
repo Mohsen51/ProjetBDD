@@ -87,7 +87,7 @@ public class Test {
                                             System.out.println("Consultation d'un enfant : ");
                                         if (age>=12 && age<18)
                                             System.out.println("Consultation d'un ado : ");
-                                        //Si ce sont des adultes
+                                            //Si ce sont des adultes
                                         else {
                                             if (rs.getInt("Couple") == 1)
                                                 System.out.println("Consultation en couple : ");
@@ -147,10 +147,11 @@ public class Test {
                             st = con.createStatement();
                             int count = 20;
                             String date = null;
+                            int exists=1;
 
                             /*Si le numéro de jour correspond à dimanche on redemande la date idem pour une heure en dehors du crénau 8h 20h
                             Si le total de rdv excede 20 cela veut dire que la psychologue travaille plus de 10h*/
-                            while (day==0 || count>=20 || (hours >20 || hours<8)) {
+                            while (day==0 || count>=20 || (hours >20 || hours<8) || exists==1) {
                                 System.out.println("Entrez la date du RDV sous la forme : yyyy/mm/dd hh24:mi (par ex : 2003/05/19 16:00) : ");
                                 date = sc.nextLine();
 
@@ -175,9 +176,27 @@ public class Test {
                                 rs = st.executeQuery("SELECT COUNT(\"IDConsultation\") AS total FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('" + parts[0] + "','yyyy/mm/dd')");
                                 while (rs.next())
                                     count = rs.getInt("total");
+                                //On vérifie que le créneau est disponible
+                                rs = st.executeQuery("SELECT COUNT(\"IDConsultation\") AS exist FROM \"Consultation\" WHERE (\"DateRDV\") = to_date('" + date + "','yyyy/mm/dd hh24:mi')");
+                                while (rs.next())
+                                    exists = rs.getInt("exist");
+                                if (count>=20)
+                                    System.out.println("Il n'y a plus de place pour ce jour la !");
+                                if (exists==1) {
+                                    System.out.println("Ce creneau est déjà pris !");
+                                    rs = st.executeQuery("SELECT \"DateRDV\" FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('" + parts[0] + "','yyyy/mm/dd')");
+                                    System.out.println("Pour info, les creneaux suivants sont déjà pris donc indisponibles : ");
+                                    while (rs.next())
+                                        System.out.println(rs.getTime("DateRDV"));
+                                    System.out.println("Vous devez choisir un créneau à au moins 30 minutes d'intervalle avec ces creneaux ! ");
+                                }
                             }
 
-                            sql = "INSERT INTO \"Consultation\"(\"DateRDV\", \"Couple\") VALUES(TO_DATE('" + date + "', 'yyyy/mm/dd hh24:mi'),0)";
+                            System.out.println("Consultation en couple ? (1 si oui 0 sinon) : ");
+                            int couple = sc.nextInt();
+                            sc.nextLine();
+
+                            sql = "INSERT INTO \"Consultation\"(\"DateRDV\", \"Couple\") VALUES(TO_DATE('" + date + "', 'yyyy/mm/dd hh24:mi')," + couple + ")";
                             st.executeQuery(sql);
 
                             //Verification que le nombre de patient est entre 1 et 3
@@ -207,19 +226,21 @@ public class Test {
                                 sql= "INSERT INTO \"PatientConsultant\" VALUES(cons_seq.currval,"+ id + ")";
                                 st.executeQuery(sql);
                             }
-
-                            if (nb==2) {
-                                System.out.println("Consultation en couple ? (1 si oui 0 sinon) : ");
-                                int couple = sc.nextInt();
-                                if (couple == 1) {
-                                    sql = "UPDATE \"Consultation\" SET \"Couple\"=" + couple + " WHERE IDConsultation = cons_seq.currval";
-                                }
-                            }
-
                             st.close();
                             break;
                         case 4:
                             sc.nextLine();
+
+                            st = con.createStatement();
+                            String rdv = null;
+                            System.out.println("Entrez la date du RDV sous la forme : yyyy/mm/dd hh24:mi (par ex : 2003/05/19 16:00) : ");
+                            rdv = sc.nextLine();
+
+                            int idc=0;
+                            rs = st.executeQuery("SELECT \"IDConsultation\" FROM \"Consultation\" WHERE (\"DateRDV\")= to_date('" + rdv + "','yyyy/mm/dd hh24:mi')");
+                            while (rs.next())
+                                idc = rs.getInt("IDConsultation");
+
                             System.out.println("Entrez le prix qu'a coûté la consultation : ");
                             int prix = sc.nextInt();
                             sc.nextLine();
@@ -234,8 +255,8 @@ public class Test {
                             int anxiete = sc.nextInt();
 
                             //On associe les données recueillies lors d'une consultation et on les mets dans la bdd
-                            st = con.createStatement();
-                            sql = "UPDATE \"Consultation\" SET \"Prix\"=" + prix + ",\"Paiement\"=" + paiement + ",\"Note\"=" + note + ",\"Anxiete\"=" + anxiete + " WHERE \"IDConsultation\" = cons_seq.currval";
+                            sql = "UPDATE \"Consultation\" SET \"Prix\"=" + prix + ",\"Reglement\"=" + paiement + ",\"Note\"=" + note + ",\"Anxiete\"=" + anxiete + " WHERE \"IDConsultation\" =" + idc;
+                            st.executeQuery(sql);
 
                             st.close();
                             break;
@@ -276,7 +297,6 @@ public class Test {
                 System.out.println("Au revoir !");
                 con.close();
             } catch (SQLException e) {
-            	user = true;
                 System.out.println("Erreur de connexion (le nom d'utilisateur ou le mot de passe est erroné) : " + e.getMessage());
             }
         } while (user);
