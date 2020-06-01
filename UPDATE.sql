@@ -40,11 +40,8 @@ GRANT create VIEW TO test;
 
 GRANT create USER TO psy;
 
-CREATE USER "kio.jin@risingstar.fr"
-  IDENTIFIED BY etoile
-  DEFAULT TABLESPACE Projet_bdd
-	QUOTA 20M on Projet_bdd;
-GRANT create session TO "kio.jin@risingstar.fr";
+CREATE USER "marie.jeanne@bio.com" IDENTIFIED BY legalize DEFAULT TABLESPACE Projet_bdd QUOTA 20M on Projet_bdd;
+GRANT create session TO "marie.jeanne@bio.com";
 
 
 COMMIT;

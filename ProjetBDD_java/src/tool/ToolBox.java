@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 public class ToolBox {
@@ -229,7 +232,91 @@ public class ToolBox {
 
 	public static void addRDV(Connection con) {
 		
+		Scanner sc = new Scanner(System.in);
 		
+		
+        try {
+        	//Initialisation des variables pour la boucle while
+            int day=0;
+            int hours = 0;
+            st = con.createStatement();
+            int count = 20;
+            String date = null;
+
+            /*Si le numéro de jour correspond à dimanche on redemande la date idem pour une heure en dehors du crénau 8h 20h
+            Si le total de rdv excede 20 cela veut dire que la psychologue travaille plus de 10h*/
+            while (day==0 || count>=20 || (hours >20 || hours<8)) {
+                System.out.println("Entrez la date du RDV sous la forme : yyyy/mm/dd hh24:mi (par ex : 2003/05/19 16:00) : ");
+                date = sc.nextLine();
+
+                //On convertit le string en date pour obtenir le jour (dimanche par exemple) et pour pouvoir étudier l'heure de rdv
+                Date dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm").parse(date);
+                java.util.Date dateConverted = new java.util.Date(dateFormat.getTime());
+
+                //Splinting to have date and time separated
+                String[] parts = date.split("\\s+");
+
+                //On extrait le jour pour confirmer une erreur en cas de rdv dimanche (0: dimanche)
+                day = dateConverted.getDay();
+
+                //On extrait l'heure pour confirmer une erreur en cas de rdv en dehors de 8h 20h
+                hours = dateConverted.getHours();
+                if (day == 0)
+                    System.out.println("Le cabinet n'est pas ouvert le dimanche ! ");
+                if (hours >20 || hours<8)
+                    System.out.println("Le cabinet est ouvert de 8h à 20h seulement ! ");
+
+                //On compte le nombre de rdv pris pour vérifier le quota de 10h de travail
+                rs = st.executeQuery("SELECT COUNT(\"IDConsultation\") AS total FROM \"Consultation\" WHERE trunc(\"DateRDV\")= to_date('" + parts[0] + "','yyyy/mm/dd')");
+                while (rs.next())
+                    count = rs.getInt("total");
+            }
+
+            sql = "INSERT INTO \"Consultation\"(\"DateRDV\", \"Couple\") VALUES(TO_DATE('" + date + "', 'yyyy/mm/dd hh24:mi'),0)";
+            st.executeQuery(sql);
+
+            //Verification que le nombre de patient est entre 1 et 3
+            int nb = 0;
+            do {
+                System.out.println("Combien de patients vont assister à ce RDV ? : (1 à 3 patients) ");
+                nb = sc.nextInt();
+                sc.nextLine();
+            } while (nb>3 || nb<1);
+
+            int id = 0;
+            for (int i=0;i<nb;i++) {
+                System.out.println("Entrez le nom du patient prenant le RDV: ");
+                String nom = "'" + sc.nextLine() + "'";
+
+                System.out.println("Entrez le prenom du patient prenant le RDV: ");
+                String prenom = "'" + sc.nextLine() + "'";
+
+                //On cherche le patient dans la bdd
+                sql = "SELECT ID FROM \"Patient\" WHERE \"Nom\" =" + nom + " AND \"Prenom\" =" + prenom;
+                rs = st.executeQuery(sql);
+                while (rs.next()) {
+                    id = rs.getInt("ID");
+                }
+
+                //On associe la consultation a un ou plusieurs patient(s) spécifiques
+                sql= "INSERT INTO \"PatientConsultant\" VALUES(cons_seq.currval,"+ id + ")";
+                st.executeQuery(sql);
+            }
+
+            if (nb==2) {
+                System.out.println("Consultation en couple ? (1 si oui 0 sinon) : ");
+                int couple = sc.nextInt();
+                if (couple == 1) {
+                    sql = "UPDATE \"Consultation\" SET \"Couple\"=" + couple + " WHERE IDConsultation = cons_seq.currval";
+                }
+            }
+
+            st.close();
+		} catch (SQLException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
 		
 	}
 
@@ -251,6 +338,7 @@ public class ToolBox {
 		
 	}
 
+	
 	
 	
 	
