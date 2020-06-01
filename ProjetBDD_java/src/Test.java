@@ -366,13 +366,13 @@ public class Test {
                             }
                             break;
                         default:
-                            System.out.println("Vous avez entrÃ© une option innexistante");
+                            System.out.println("Vous avez entré une option innexistante");
                     }
                 }
                 System.out.println("Au revoir !");
                 con.close();
             } catch (SQLException e) {
-                System.out.println("Erreur de connexion (le nom d'utilisateur ou le mot de passe est erronÃ©) : " + e.getMessage());
+                System.out.println("Erreur de connexion (le nom d'utilisateur ou le mot de passe est erroné) : " + e.getMessage());
             }
         } while (user);
     }

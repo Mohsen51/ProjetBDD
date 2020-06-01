@@ -12,7 +12,7 @@ public class RdvMain {
 	        Class.forName("oracle.jdbc.driver.OracleDriver");
 	        
 	        User user = new User();
-	        
+	        int choose;
 	        
 	        
 	        while(user.connected) {
@@ -27,10 +27,10 @@ public class RdvMain {
 		        		}
 		        		break;
 		        	case 1 :
-		        		int choose;
+		        		
 						do {
 							
-							ToolBox.displayRDV(user.con,"a consulter");
+							ToolBox.displayRDVS(user.con);
 							System.out.println("Consulter un autre jour ? (0 pour oui)");
 							Scanner sc = new Scanner(System.in);
 		                     try {
@@ -45,16 +45,42 @@ public class RdvMain {
 		        		ToolBox.newPatient(user.con);
 		        		break;
 		        	case 3 :
-		        		ToolBox.addRDV(user.con);
+		        		
+						do {
+							
+							ToolBox.addRDV(user.con);
+							System.out.println("Ajouter un autre RDV ? (0 pour oui)");
+							Scanner sc = new Scanner(System.in);
+		                     try {
+		                    	 choose = sc.nextInt();
+		                     }catch(Exception e1) {
+		                    	 choose = 1;
+		                     }
+		        		}while(choose == 0);
+		        		
 		        		break;
 		        	case 4 :
-		        		ToolBox.updateRDV(user.con);
+		        		do {
+		        			
+			        		ToolBox.updateRDV(user.con);
+							System.out.println("Modifier un autre RDV ? (0 pour oui)");
+							Scanner sc = new Scanner(System.in);
+		                     try {
+		                    	 choose = sc.nextInt();
+		                     }catch(Exception e1) {
+		                    	 choose = 1;
+		                     }
+		        		}while(choose == 0);
+		        		
 		        		break;
 		        	case 5 :
+		        		ToolBox.updateP(user.con);
 		        		break;
 		        	case 6 :
 		        		ToolBox.delRDV(user.con);
 		        		break;
+		        	case 7 :
+		        		ToolBox.prevRDV(user.con);
 		        	}	
 	        		break;
 	        		
@@ -69,10 +95,6 @@ public class RdvMain {
 		        		break;
 		        	case 1 :
 		        		ToolBox.displayRDVP(user);
-		        		break;
-		        	case 2 :
-		        		break;
-		        	case 3 :
 		        		break;
 	        		}
 	        	}
