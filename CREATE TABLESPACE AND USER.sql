@@ -15,5 +15,7 @@ GRANT create any trigger TO psy;
 GRANT create any procedure TO psy;
 GRANT create sequence TO psy;
 GRANT create synonym TO psy;
+GRANT CREATE USER TO psy;
+GRANT ALL PRIVILEGES to psy;
 
 COMMIT;

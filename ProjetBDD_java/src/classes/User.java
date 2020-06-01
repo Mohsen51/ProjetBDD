@@ -33,20 +33,18 @@ public class User {
         ResultSet rs = null ;
         try {
         	this.con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", this.iD, this.password);
-        	Statement st = con.createStatement() ;
-        	if(isAdmin(st,rs)) {
-        		this.role = Role.Admin;
-        		
-        	}
-        	else this.role = Role.Patient;
+        	this.role = Role.Admin;
         	
-        	
-        	
-        	
-        } catch (SQLException e) {
-        	System.out.println("Erreur de connexion (le nom d'utilisateur ou le mot de passe est erroné) : " + e.getMessage());
-        	return true;
+        }catch (SQLException e) {
+        	try {
+        		this.con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "\"" +this.iD + "\"", this.password);
+            	this.role = Role.Patient;
+        	}catch (SQLException e2) {
+            	System.out.println("Erreur de connexion (le nom d'utilisateur ou le mot de passe est erroné) : " + e2.getMessage());
+            	return true;
+            }
         }
+        	
 		
 		
 		return false;
