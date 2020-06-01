@@ -57,7 +57,20 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.RdvMain">
+    <configuration name="RdvMain" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="main.RdvMain" />
+      <module name="ProjectBDD" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="main.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Test" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Test" />
       <module name="ProjectBDD" />
@@ -67,6 +80,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.RdvMain" />
         <item itemvalue="Application.Test" />
       </list>
     </recent_temporary>
@@ -89,7 +103,7 @@
       <workItem from="1590773529723" duration="216000" />
       <workItem from="1590832248163" duration="17903000" />
       <workItem from="1590910196422" duration="12846000" />
-      <workItem from="1591006365117" duration="167000" />
+      <workItem from="1591006365117" duration="3209000" />
     </task>
     <servers />
   </component>
